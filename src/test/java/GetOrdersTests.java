@@ -25,12 +25,7 @@ public class GetOrdersTests {
     @Test
     @DisplayName("Get order with authorization and check answer")
     public void getOrderWithAuthorizationCheck() {
-        String email = RandomStringUtils.randomAlphabetic(5) + "@yandex.ru";
-        String password = RandomStringUtils.randomAlphabetic(10);
-        String username = RandomStringUtils.randomAlphabetic(10);
-        Response createResponse = userClient.create(email, password, username);
-        String accessToken = createResponse.path("accessToken");
-        userClient.login(email, password);
+        String accessToken = createAndLogin();
         Response responseIngredients = ingredientsClient.getIngredients();
         List<String> ingredients = responseIngredients.path("data._id");
         orderClient.createOrder(ingredients, accessToken);
@@ -43,12 +38,7 @@ public class GetOrdersTests {
     @Test
     @DisplayName("Get order without authorization and check answer")
     public void getOrderWithoutAuthorizationCheck() {
-        String email = RandomStringUtils.randomAlphabetic(5) + "@yandex.ru";
-        String password = RandomStringUtils.randomAlphabetic(10);
-        String username = RandomStringUtils.randomAlphabetic(10);
-        Response createResponse = userClient.create(email, password, username);
-        String accessToken = createResponse.path("accessToken");
-        userClient.login(email, password);
+        String accessToken = createAndLogin();
         Response responseIngredients = ingredientsClient.getIngredients();
         List<String> ingredients = responseIngredients.path("data._id");
         orderClient.createOrder(ingredients, accessToken);
@@ -56,5 +46,15 @@ public class GetOrdersTests {
         assertEquals("StatusCode is incorrect", 401, response.statusCode());
         assertEquals("Isn't unsuccessful", false, response.path("success"));
         assertEquals("Message is incorrect", "You should be authorised", response.path("message"));
+    }
+
+    private String createAndLogin(){
+        String email = RandomStringUtils.randomAlphabetic(5) + "@yandex.ru";
+        String password = RandomStringUtils.randomAlphabetic(10);
+        String username = RandomStringUtils.randomAlphabetic(10);
+        Response response = userClient.create(email, password, username);
+        userClient.login(email, password);
+        String accessToken = response.path("accessToken");
+        return accessToken;
     }
 }
